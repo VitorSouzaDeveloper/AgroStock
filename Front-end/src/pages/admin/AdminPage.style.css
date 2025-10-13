@@ -1,0 +1,51 @@
+.admin-container {
+    color: var(--text-primary);
+}
+.admin-container h1 {
+    color: var(--primary-green);
+    margin-bottom: 5px;
+}
+.admin-container p {
+    margin-bottom: 30px;
+    color: var(--text-secondary);
+}
+
+.users-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: var(--background-light);
+}
+
+.users-table th, .users-table td {
+    border-bottom: 1px solid var(--border-color);
+    padding: 15px;
+    text-align: left;
+}
+
+.users-table th {
+    font-size: 14px;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+}
+
+.users-table tbody tr:hover {
+    background-color: #3c4a60;
+}
+
+.delete-btn {
+    background-color: #e53e3e;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.promote-btn {
+    background-color: #3182ce; /* Azul */
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-right: 10px;
+}

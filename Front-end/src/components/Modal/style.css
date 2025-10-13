@@ -1,0 +1,66 @@
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background-color: var(--background-light);
+    padding: 30px;
+    border-radius: 8px;
+    width: 100%;
+    max-width: 500px;
+    border: 1px solid var(--border-color);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+}
+
+.modal-header h2 {
+    color: var(--primary-green);
+}
+
+.close-button {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 28px;
+    cursor: pointer;
+}
+
+/* Reutilizando estilos de formulário para o corpo do modal */
+.modal-body .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-bottom: 15px;
+}
+
+.modal-body .form-group label {
+    font-weight: bold;
+    color: var(--text-secondary);
+}
+
+.modal-body .form-group input {
+    height: 45px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    padding: 0 15px;
+    font-size: 16px;
+    background-color: var(--background-dark);
+    color: var(--text-primary);
+    outline: none;
+}

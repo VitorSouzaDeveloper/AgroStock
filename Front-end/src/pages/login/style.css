@@ -1,0 +1,70 @@
+.container {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  padding-top: 60px; /* Reduzindo o padding para dar espaço ao logo */
+}
+
+/* O h1 agora é o título do Logo, então estilizamos o h2 do formulário */
+h2 {
+  color: var(--text-primary);
+  font-size: 24px;
+  text-align: center;
+  font-weight: 700;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 40px;
+  border-radius: 10px;
+  background-color: var(--background-light);
+  width: 100%;
+  max-width: 450px;
+  margin-top: 10px; /* Espaçamento entre o logo e o formulário */
+  border: 1px solid var(--border-color);
+}
+
+form button {
+  border-radius: 8px;
+  background-color: var(--primary-green);
+  height: 45px;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  color: white;
+  font-size: 16px;
+  transition: background-color 0.2s ease-in-out;
+}
+
+form button:hover {
+  background-color: #38a169;
+}
+
+form input {
+  height: 45px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  padding: 0 15px;
+  font-size: 16px;
+  background-color: var(--background-dark);
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color 0.2s ease-in-out;
+}
+
+form input:focus {
+  border-color: var(--primary-green);
+}
+
+.footer {
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.footer a {
+  color: var(--primary-green);
+  text-decoration: none;
+  font-weight: bold;
+}

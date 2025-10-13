@@ -1,0 +1,18 @@
+.logo-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.logo-svg {
+    width: 80px;
+    height: 80px;
+}
+
+.logo-title {
+    color: var(--primary-green);
+    font-size: 36px;
+    font-weight: 700;
+    margin-top: 5px;
+}

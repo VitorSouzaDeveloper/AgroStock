@@ -1,0 +1,25 @@
+.reports-container {
+    color: var(--text-primary);
+}
+
+.reports-container header {
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 20px;
+    margin-bottom: 30px;
+}
+
+.report-widget {
+    background-color: var(--background-light);
+    padding: 25px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.report-widget h2 {
+    margin-bottom: 25px;
+    color: var(--primary-green);
+}
+
+.chart-container {
+    font-family: 'Lato', sans-serif;
+}

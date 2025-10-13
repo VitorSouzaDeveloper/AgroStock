@@ -1,0 +1,65 @@
+.sidebar {
+    width: 250px;
+    background-color: var(--background-light);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    border-right: 1px solid var(--border-color);
+}
+
+.sidebar-header {
+    /* Novas propriedades para alinhar o logo e o texto */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px; /* Espaçamento entre o logo e o texto */
+
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.sidebar-header h3 {
+    color: var(--primary-green);
+    font-size: 24px;
+    margin: 0; /* Remove margem padrão do h3 */
+}
+
+/* Estilo para o SVG do logo na sidebar */
+.sidebar-logo-svg {
+    width: 35px;
+    height: 35px;
+}
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 12px 15px;
+    border-radius: 8px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-weight: bold;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.nav-link:hover {
+    background-color: #3c4a60;
+}
+
+.nav-link.active {
+    background-color: var(--primary-green);
+    color: white;
+}
+
+.nav-link svg {
+    width: 24px;
+    height: 24px;
+}

@@ -1,0 +1,14 @@
+# Ignorar logs e arquivos de sistema
+*.log
+.DS_Store
+
+# Ignorar pastas de dependências de AMBOS os projetos
+node_modules/
+
+# Ignorar arquivos de ambiente (NUNCA ENVIE SENHAS!)
+.env
+.env.*
+
+# Ignorar pastas de build do frontend
+dist/
+.cache/
