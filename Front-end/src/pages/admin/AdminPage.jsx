@@ -9,9 +9,8 @@ function AdminPage() {
 
     async function fetchUsers() {
         try {
-            const response = await api.get('/admin/users', {
-                headers: { 'x-user-id': user.id }
-            });
+            // Não é mais necessário enviar o header 'x-user-id'
+            const response = await api.get('/admin/users');
             setUsers(response.data);
         } catch (error) {
             alert('Você não tem permissão para ver esta página.');
@@ -26,9 +25,8 @@ function AdminPage() {
     async function handleDeleteUser(userId) {
         if (window.confirm("Tem certeza que deseja deletar este usuário? A ação é irreversível.")) {
             try {
-                await api.delete(`/admin/users/${userId}`, {
-                    headers: { 'x-user-id': user.id }
-                });
+                // Não é mais necessário enviar o header 'x-user-id'
+                await api.delete(`/admin/users/${userId}`);
                 alert('Usuário deletado com sucesso.');
                 fetchUsers();
             } catch (error) {
@@ -37,16 +35,15 @@ function AdminPage() {
         }
     }
 
-    // NOVA FUNÇÃO: Promover ou rebaixar um usuário
     async function handleToggleAdmin(targetUser) {
         const newRole = targetUser.role === 'ADMIN' ? 'USER' : 'ADMIN';
         const action = newRole === 'ADMIN' ? 'promover' : 'rebaixar';
 
         if (window.confirm(`Tem certeza que deseja ${action} ${targetUser.name}?`)) {
             try {
+                 // Não é mais necessário enviar o header 'x-user-id'
                 await api.put(`/admin/users/${targetUser.id}/role`, 
-                    { role: newRole },
-                    { headers: { 'x-user-id': user.id } }
+                    { role: newRole }
                 );
                 alert(`Usuário ${action === 'promover' ? 'promovido' : 'rebaixado'} com sucesso.`);
                 fetchUsers();

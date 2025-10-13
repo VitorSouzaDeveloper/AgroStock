@@ -2,7 +2,7 @@ import { useRef, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../../services/api.js';
 import { AuthContext } from '../../contexts/AuthContext.jsx';
-import Logo from '../../components/Logo'; // 1. Importe o novo componente Logo
+import Logo from '../../components/Logo';
 import './style.css';
 
 function Login() {
@@ -22,7 +22,10 @@ function Login() {
             }
 
             const response = await api.post('/login', { email, senha });
-            login(response.data);
+            
+            // Passa o objeto inteiro { user, token } para a função de login
+            login(response.data); 
+            
             navigate('/dashboard');
 
         } catch (error) {
@@ -33,11 +36,8 @@ function Login() {
 
     return (
         <div className='container'>
-            {/* 2. Adicione o componente Logo aqui */}
             <Logo />
-
             <form>
-                {/* 3. Mude o título para h2 */}
                 <h2>Acesse sua conta</h2>
                 <input name='email' type='email' placeholder='E-mail' required ref={inputEmail} />
                 <input name='senha' type='password' placeholder='Senha' required ref={inputSenha} />
