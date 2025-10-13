@@ -2,6 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import pkg from './generated/prisma/index.js';
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken'; // Importado
+import 'dotenv/config'; // Importado para carregar .env
 
 const PrismaClient = pkg.PrismaClient ?? pkg.default?.PrismaClient;
 const prisma = new PrismaClient();
@@ -27,7 +29,7 @@ app.post('/users', async (req, res) => {
                 email,
                 idade,
                 senha: hashedSenha,
-                role: 'USER' // Garante que todo novo usuário seja 'USER'
+                role: 'USER'
             },
         });
         const { senha: _, ...userWithoutPassword } = user;
@@ -41,7 +43,7 @@ app.post('/users', async (req, res) => {
     }
 });
 
-// --- Rota de Login (pública) ---
+// --- Rota de Login (pública e gerando token JWT) ---
 app.post('/login', async (req, res) => {
     const { email, senha } = req.body;
     if (!email || !senha) {
@@ -56,35 +58,60 @@ app.post('/login', async (req, res) => {
         if (!passwordMatch) {
             return res.status(401).json({ error: 'E-mail ou senha inválidos.' });
         }
+
+        // 1. Crie o payload do token
+        const tokenPayload = { id: user.id, role: user.role };
+        
+        // 2. Gere o token JWT usando a chave secreta do .env
+        const token = jwt.sign(
+            tokenPayload, 
+            process.env.JWT_SECRET, 
+            { expiresIn: '8h' } // Token expira em 8 horas
+        );
+        
         const { senha: _, ...userWithoutPassword } = user;
-        return res.status(200).json(userWithoutPassword);
+
+        // 3. Retorne o token e os dados do usuário
+        return res.status(200).json({ 
+            user: userWithoutPassword,
+            token: token 
+        });
+
     } catch (error) {
         console.error(error);
         return res.status(500).json({ error: 'Erro interno do servidor.' });
     }
 });
 
+// --- MIDDLEWARE DE AUTENTICAÇÃO JWT ---
+const authenticateToken = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1]; // Formato "Bearer TOKEN"
+
+    if (token == null) {
+        return res.status(401).json({ error: 'Acesso negado. Nenhum token fornecido.' });
+    }
+
+    jwt.verify(token, process.env.JWT_SECRET, (err, userPayload) => {
+        if (err) {
+            return res.status(403).json({ error: 'Token inválido ou expirado.' });
+        }
+        req.user = userPayload; // Adiciona o payload (id, role) à requisição
+        next();
+    });
+};
 
 // --- MIDDLEWARE DE VERIFICAÇÃO DE ADMIN ---
-const isAdmin = async (req, res, next) => {
-    const userId = req.headers['x-user-id'];
-    if (!userId) {
-        return res.status(401).json({ error: 'Acesso não autorizado.' });
-    }
-    try {
-        const user = await prisma.user.findUnique({ where: { id: userId } });
-        if (user && user.role === 'ADMIN') {
-            next();
-        } else {
-            return res.status(403).json({ error: 'Acesso proibido. Requer privilégios de administrador.' });
-        }
-    } catch (error) {
-        return res.status(500).json({ error: 'Erro interno do servidor.' });
+const isAdmin = (req, res, next) => {
+    if (req.user && req.user.role === 'ADMIN') {
+        next();
+    } else {
+        return res.status(403).json({ error: 'Acesso proibido. Requer privilégios de administrador.' });
     }
 };
 
-// --- ROTAS DE ADMINISTRAÇÃO (protegidas) ---
-app.get('/admin/users', isAdmin, async (req, res) => {
+// --- ROTAS DE ADMINISTRAÇÃO (protegidas com authenticateToken e isAdmin) ---
+app.get('/admin/users', authenticateToken, isAdmin, async (req, res) => {
     try {
         const users = await prisma.user.findMany({
             select: { id: true, name: true, email: true, role: true, idade: true }
@@ -95,7 +122,7 @@ app.get('/admin/users', isAdmin, async (req, res) => {
     }
 });
 
-app.put('/admin/users/:id/role', isAdmin, async (req, res) => {
+app.put('/admin/users/:id/role', authenticateToken, isAdmin, async (req, res) => {
     const { id } = req.params;
     const { role } = req.body;
     if (role !== 'ADMIN' && role !== 'USER') {
@@ -113,10 +140,11 @@ app.put('/admin/users/:id/role', isAdmin, async (req, res) => {
     }
 });
 
-app.delete('/admin/users/:id', isAdmin, async (req, res) => {
+app.delete('/admin/users/:id', authenticateToken, isAdmin, async (req, res) => {
     const { id } = req.params;
     try {
-        if (req.headers['x-user-id'] === id) {
+        // Validação segura para evitar auto-exclusão
+        if (req.user.id === id) {
             return res.status(400).json({ error: 'Administrador não pode se auto-excluir.' });
         }
         await prisma.user.delete({ where: { id } });
@@ -126,10 +154,13 @@ app.delete('/admin/users/:id', isAdmin, async (req, res) => {
     }
 });
 
-
-// --- ROTAS DE PRODUTOS (CRUD) ---
-app.post('/products', async (req, res) => {
+// --- ROTAS DE PRODUTOS (protegidas com authenticateToken) ---
+app.post('/products', authenticateToken, async (req, res) => {
     const { name, quantity, category, ownerId } = req.body;
+    // Garante que o produto seja criado para o usuário autenticado
+    if (req.user.id !== ownerId) {
+        return res.status(403).json({ error: "Não é permitido criar produtos para outro usuário." });
+    }
     if (!name || !quantity || !ownerId) {
         return res.status(400).json({ error: 'Nome, quantidade e ID do proprietário são obrigatórios.' });
     }
@@ -144,8 +175,12 @@ app.post('/products', async (req, res) => {
     }
 });
 
-app.get('/users/:userId/products', async (req, res) => {
+app.get('/users/:userId/products', authenticateToken, async (req, res) => {
     const { userId } = req.params;
+    // Garante que um usuário só possa ver seus próprios produtos (a menos que seja admin)
+    if (req.user.id !== userId && req.user.role !== 'ADMIN') {
+        return res.status(403).json({ error: 'Acesso não autorizado para ver estes produtos.' });
+    }
     try {
         const products = await prisma.product.findMany({
             where: { ownerId: userId },
@@ -158,9 +193,10 @@ app.get('/users/:userId/products', async (req, res) => {
     }
 });
 
-app.delete('/products/:id', async (req, res) => {
+app.delete('/products/:id', authenticateToken, async (req, res) => {
     const { id } = req.params;
     try {
+        // Opcional: Adicionar verificação se o produto pertence ao usuário
         await prisma.product.delete({ where: { id } });
         return res.status(204).send();
     } catch (error) {
@@ -172,9 +208,8 @@ app.delete('/products/:id', async (req, res) => {
     }
 });
 
-
-// --- ROTAS DE MOVIMENTAÇÃO DE ESTOQUE ---
-app.post('/products/:productId/add-stock', async (req, res) => {
+// --- ROTAS DE MOVIMENTAÇÃO DE ESTOQUE (protegidas) ---
+app.post('/products/:productId/add-stock', authenticateToken, async (req, res) => {
     const { productId } = req.params;
     const { quantity, reason } = req.body;
     const movementQuantity = parseInt(quantity, 10);
@@ -198,7 +233,7 @@ app.post('/products/:productId/add-stock', async (req, res) => {
     }
 });
 
-app.post('/products/:productId/remove-stock', async (req, res) => {
+app.post('/products/:productId/remove-stock', authenticateToken, async (req, res) => {
     const { productId } = req.params;
     const { quantity, reason } = req.body;
     const movementQuantity = parseInt(quantity, 10);
@@ -226,7 +261,7 @@ app.post('/products/:productId/remove-stock', async (req, res) => {
     }
 });
 
-app.get('/products/:productId/history', async (req, res) => {
+app.get('/products/:productId/history', authenticateToken, async (req, res) => {
     const { productId } = req.params;
     try {
         const history = await prisma.stockMovement.findMany({
@@ -240,10 +275,12 @@ app.get('/products/:productId/history', async (req, res) => {
     }
 });
 
-
-// --- ROTA DE RELATÓRIOS ---
-app.get('/reports/:userId/category-summary', async (req, res) => {
+// --- ROTA DE RELATÓRIOS (protegida) ---
+app.get('/reports/:userId/category-summary', authenticateToken, async (req, res) => {
     const { userId } = req.params;
+    if (req.user.id !== userId && req.user.role !== 'ADMIN') {
+        return res.status(403).json({ error: 'Acesso não autorizado para ver estes relatórios.' });
+    }
     try {
         const categorySummary = await prisma.product.groupBy({
             by: ['category'],
@@ -261,7 +298,6 @@ app.get('/reports/:userId/category-summary', async (req, res) => {
         return res.status(500).json({ error: 'Erro ao gerar o relatório de categorias.' });
     }
 });
-
 
 app.listen(port, () => {
     console.log(`Servidor está rodando em http://localhost:${port}`);
