@@ -299,6 +299,12 @@ app.get('/reports/:userId/category-summary', authenticateToken, async (req, res)
     }
 });
 
-app.listen(port, () => {
-    console.log(`Servidor está rodando em http://localhost:${port}`);
-});
+// Apenas roda o listen se estivermos localmente
+if (process.env.NODE_ENV !== 'production') {
+    app.listen(port, () => {
+        console.log(`Servidor está rodando em http://localhost:${port}`);
+    });
+}
+
+// Exporta o app para o Vercel assumir o controle
+export default app;
