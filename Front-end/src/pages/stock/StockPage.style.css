@@ -2,7 +2,8 @@
     width: 100%;
     max-width: 1200px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 15px;
+    font-family: 'Lato', sans-serif;
 }
 
 header {
@@ -10,7 +11,8 @@ header {
     justify-content: space-between;
     align-items: center;
     border-bottom: 1px solid var(--border-color);
-    padding-bottom: 20px;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
 }
 
 .user-info {
@@ -21,168 +23,312 @@ header {
 
 .user-info span {
     font-weight: bold;
+    font-size: 14px;
 }
 
 .user-info button {
-    background-color: #e53e3e; /* Vermelho para a ação de "sair" */
+    background-color: #e53e3e;
     border: none;
-    border-radius: 8px;
-    padding: 10px 18px;
+    border-radius: 6px;
+    padding: 6px 12px;
     color: white;
     cursor: pointer;
     font-weight: bold;
-    transition: background-color 0.2s ease-in-out;
+    font-size: 13px;
+    transition: background-color 0.2s;
 }
+
 .user-info button:hover {
     background-color: #c53030;
 }
 
 main {
-    margin-top: 40px;
+    margin-top: 15px;
 }
 
 main h2 {
+    margin-bottom: 15px;
+    font-size: 20px;
+}
+
+
+.stock-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.add-new-product-button {
+    background-color: var(--primary-green);
+    border: none;
+    border-radius: 6px;
+    padding: 10px 18px;
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.add-new-product-button:hover {
+    background-color: #38a169;
+}
+
+.filter-container {
+    display: flex;
+    gap: 8px;
     margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.filter-button {
+    background-color: var(--background-light);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 6px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 13px;
+    transition: all 0.2s;
+}
+
+.filter-button:hover {
+    background-color: #3c4a60;
+    border-color: #5a6880;
+}
+
+.filter-button.active {
+    background-color: var(--primary-green);
+    color: white;
+    border-color: var(--primary-green);
 }
 
 .stock-list {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 15px;
 }
 
 .product-item {
     background-color: var(--background-light);
-    padding: 20px;
+    padding: 15px;
     border-radius: 8px;
     border: 1px solid var(--border-color);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 .product-item h3 {
     color: var(--primary-green);
     margin-bottom: 10px;
+    padding-right: 30px;
+    font-size: 16px;
 }
 
-.add-product-form {
-    background-color: var(--background-light);
-    padding: 25px;
-    border-radius: 8px;
-    border: 1px solid var(--border-color);
-    margin-bottom: 40px;
-    display: flex;
-    gap: 15px;
-    align-items: flex-end;
-}
-
-.form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    flex: 1; /* Faz os inputs ocuparem o espaço disponível */
-}
-
-.form-group label {
-    font-size: 14px;
-    font-weight: bold;
+.product-details p {
+    margin: 4px 0;
     color: var(--text-secondary);
+    font-size: 13px;
 }
 
-.form-group input {
-    height: 45px;
-    border-radius: 8px;
-    border: 1px solid var(--border-color);
-    padding: 0 15px;
-    font-size: 16px;
-    background-color: var(--background-dark);
-    color: var(--text-primary);
-    outline: none;
-}
-
-.add-product-form button {
-    height: 45px;
-    padding: 0 25px;
-    background-color: var(--primary-green);
+.delete-icon-button {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: transparent;
     border: none;
-    border-radius: 8px;
-    color: white;
-    font-weight: bold;
-    font-size: 16px;
+    color: #e53e3e;
     cursor: pointer;
-    transition: background-color 0.2s ease-in-out;
+    padding: 5px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
 }
 
-.add-product-form button:hover {
-    background-color: #38a169;
+.delete-icon-button:hover {
+    background-color: rgba(229, 62, 62, 0.15);
+    transform: scale(1.1);
 }
 
+.delete-icon-button svg {
+    width: 18px;
+    height: 18px;
+}
 
-/* --- Estilos para os botões de ação do produto --- */
 .product-actions {
     margin-top: 15px;
     display: flex;
-    gap: 10px;
+    gap: 8px;
 }
 
 .product-actions button {
-    width: 100%;
-    padding: 10px;
+    flex: 1;
+    padding: 8px 5px;
     border: none;
-    border-radius: 5px;
+    border-radius: 6px;
     font-weight: bold;
+    font-size: 12px;
     cursor: pointer;
     color: white;
     transition: opacity 0.2s;
 }
 
-.delete-button {
-    background-color: #e53e3e; /* Vermelho */
-}
-
 .product-actions button:hover {
-    opacity: 0.8;
+    opacity: 0.9;
 }
 
 .edit-button {
-    background-color: #3182ce; /* Azul para editar */
+    background-color: #3182ce;
 }
 
-/* --- Estilos para o formulário em modo de edição --- */
-.edit-mode-actions {
-    display: flex;
-    gap: 10px;
-}
-
-.edit-mode-actions button {
-    flex: 1;
-}
-
-.cancel-button {
-    background-color: #a0aec0; /* Cinza para cancelar */
-    color: #1A202C;
-}
-
-.cancel-button:hover {
-    background-color: #718096;
+.subtract-button {
+    background-color: #dd6b20;
 }
 
 .history-button {
-    background-color: #718096; /* Cinza */
+    background-color: #718096;
 }
 
-/* --- Estilos para o Modal de Histórico --- */
-.history-list {
-    max-height: 400px;
-    overflow-y: auto;
+.form-group {
     display: flex;
     flex-direction: column;
+    gap: 4px;
+    margin-bottom: 12px;
+}
+
+.form-group label {
+    font-size: 13px;
+    font-weight: bold;
+    color: var(--text-secondary);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 14px;
+    background-color: var(--background-dark);
+    color: var(--text-primary);
+    outline: none;
+    box-sizing: border-box;
+    font-family: 'Lato', sans-serif;
+    transition: border-color 0.2s;
+}
+
+.form-group input,
+.form-group select {
+    height: 40px;
+}
+
+.form-group textarea {
+    min-height: 70px;
+    resize: vertical;
+    padding-top: 8px;
+}
+
+.form-group select {
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.8rem center;
+    background-size: 0.8em;
+    padding-right: 2rem;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    border-color: var(--primary-green);
+    box-shadow: 0 0 0 1px var(--primary-green);
+}
+
+.form-row {
+    display: flex;
     gap: 15px;
+    margin-bottom: 12px;
+}
+
+.form-row .form-group {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid var(--border-color);
+}
+
+.modal-actions button {
+    flex: 1;
+    height: 40px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+}
+
+.cancel-button {
+    background-color: #a0aec0;
+    color: #1A202C;
+}
+
+.save-button {
+    background-color: var(--primary-green);
+    color: white;
+}
+
+.history-list {
+    max-height: 250px;
+    overflow-y: auto;
+    padding-right: 5px;
 }
 
 .history-item {
     background-color: var(--background-dark);
-    padding: 15px;
-    border-radius: 5px;
+    padding: 10px;
+    border-radius: 6px;
     border-left: 4px solid;
+    margin-bottom: 8px;
+}
+
+.info-icon-button {
+    position: absolute;
+    top: 50px;
+    right: 12px;
+    background: transparent;
+    border: none;
+    color: #3182ce;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.info-icon-button:hover {
+    background-color: rgba(49, 130, 206, 0.15);
+    transform: scale(1.1);
+}
+
+.info-icon-button svg {
+    width: 20px;
+    height: 20px;
 }
 
 .history-item.entrada {
@@ -195,69 +341,12 @@ main h2 {
 
 .history-item p {
     margin: 0;
-}
-
-.history-item .reason {
-    font-style: italic;
-    color: var(--text-secondary);
-    font-size: 14px;
+    font-size: 13px;
 }
 
 .history-item .date {
-    font-size: 12px;
+    font-size: 11px;
     color: #a0aec0;
+    margin-top: 4px;
     text-align: right;
-}
-
-.stock-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-.add-new-product-button {
-    background-color: var(--primary-green);
-    border: none;
-    border-radius: 8px;
-    padding: 12px 20px;
-    color: white;
-    font-weight: bold;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.add-new-product-button:hover {
-    background-color: #38a169;
-}
-
-
-.filter-container {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 25px;
-    flex-wrap: wrap; /* Permite que os botões quebrem a linha em telas menores */
-}
-
-.filter-button {
-    background-color: var(--background-light);
-    border: 1px solid var(--border-color);
-    color: var(--text-secondary);
-    padding: 8px 15px;
-    border-radius: 20px; /* Mais arredondado para parecer uma "tag" */
-    cursor: pointer;
-    font-weight: bold;
-    transition: all 0.2s ease-in-out;
-}
-
-.filter-button:hover {
-    background-color: #3c4a60;
-    border-color: #5a6880;
-}
-
-.filter-button.active {
-    background-color: var(--primary-green);
-    color: white;
-    border-color: var(--primary-green);
 }

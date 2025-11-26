@@ -1,0 +1,10 @@
+{
+  "name": "agrostock-root",
+  "version": "1.0.0",
+  "scripts": {
+  "dev": "concurrently -n \"BACK,FRONT\" -c \"blue,green\" \"npm start --prefix backend\" \"npm run dev --prefix Front-end\""
+},
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
