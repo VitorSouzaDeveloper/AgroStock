@@ -15,11 +15,7 @@ app.use(express.json());
 
 // Configuração do CORS para aceitar o Front-end
 app.use(cors({
-    origin: [
-        "https://agro-stock-k6cn.vercel.app", // Seu link temporário
-        "https://agro-stock.vercel.app",      // ADICIONE ESTE: Seu link de produção principal
-        "http://localhost:5173"                 // Localhost
-    ],
+    origin: "*", // Permite qualquer site (apenas para teste!)
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"]
 }));
