@@ -16,11 +16,12 @@ app.use(express.json());
 // Configuração do CORS para aceitar o Front-end
 app.use(cors({
     origin: [
-        "https://agro-stock-k6cn.vercel.app", // O teu Front-end em Produção
-        "http://localhost:5173"                 // O teu Front-end Local (para testes)
+        "https://agro-stock-k6cn.vercel.app", // Seu link temporário
+        "https://agro-stock.vercel.app",      // ADICIONE ESTE: Seu link de produção principal
+        "http://localhost:5173"                 // Localhost
     ],
-    methods: ["GET", "POST", "PUT", "DELETE"], // Métodos permitidos
-    allowedHeaders: ["Content-Type", "Authorization"] // Cabeçalhos permitidos
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"]
 }));
 // --- Rota de Cadastro (pública) ---
 app.post('/users', async (req, res) => {
