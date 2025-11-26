@@ -12,8 +12,16 @@ const app = express();
 const port = 3000;
 
 app.use(express.json());
-app.use(cors());
 
+// Configuração do CORS para aceitar o Front-end
+app.use(cors({
+    origin: [
+        "https://agro-stock-k6cn.vercel.app", // O teu Front-end em Produção
+        "http://localhost:5173"                 // O teu Front-end Local (para testes)
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE"], // Métodos permitidos
+    allowedHeaders: ["Content-Type", "Authorization"] // Cabeçalhos permitidos
+}));
 // --- Rota de Cadastro (pública) ---
 app.post('/users', async (req, res) => {
     const { name, email, idade, senha } = req.body;
