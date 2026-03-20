@@ -17,7 +17,9 @@ app.use(cors({
     origin: [
         "https://agro-stock-k6cn.vercel.app",
         "https://agro-stock.vercel.app",
-        "http://localhost:5173"
+        "http://localhost:5173",
+        "http://localhost",       
+        "capacitor://localhost"   
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"]
