@@ -106,7 +106,7 @@ app.get('/users/:userId/products', authenticateToken, async (req, res) => {
 });
 
 app.post('/products', authenticateToken, async (req, res) => {
-    const { name, quantity, category, unit, price, minStock, description, batch, expiryDate, ownerId } = req.body;
+    const { name, quantity, category, unit, price, minStock, description, batch, expiryDate,barcode, ownerId } = req.body;
 
     if (req.user.id !== ownerId) return res.status(403).json({ error: "Não permitido." });
     if (!name || !quantity || !ownerId) return res.status(400).json({ error: 'Campos obrigatórios ausentes.' });
@@ -122,6 +122,7 @@ app.post('/products', authenticateToken, async (req, res) => {
                 description: description || '',
                 batch: batch || null,
                 expiryDate: expiryDate ? new Date(expiryDate) : null,
+                barcode: barcode || null,
             },
         });
         return res.status(201).json(product);
@@ -130,7 +131,7 @@ app.post('/products', authenticateToken, async (req, res) => {
 
 app.put('/products/:id', authenticateToken, async (req, res) => {
     const { id } = req.params;
-    const { name, quantity, category, unit, price, minStock, description, batch, expiryDate } = req.body;
+    const { name, quantity, category, unit, price, minStock, description, batch, expiryDate,barcode } = req.body;
 
     try {
         const existingProduct = await prisma.product.findUnique({ where: { id } });
@@ -144,6 +145,7 @@ app.put('/products/:id', authenticateToken, async (req, res) => {
                 price: parseFloat(price) || 0,
                 minStock: parseInt(minStock, 10) || 0,
                 expiryDate: expiryDate ? new Date(expiryDate) : null,
+                barcode: barcode || null,
             },
         });
         return res.status(200).json(updatedProduct);

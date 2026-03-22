@@ -29,7 +29,7 @@ model Product {
   description String?
   batch       String?
   expiryDate  DateTime?
-
+  barcode     String?
   owner       User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   ownerId     String   @db.ObjectId
   movements   StockMovement[]
