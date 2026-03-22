@@ -15,6 +15,8 @@ model User {
   idade    String?
   senha    String
   role     String    @default("USER")
+  resetToken   String?
+  resetTokenExpires DateTime?
   products Product[]
 }
 
