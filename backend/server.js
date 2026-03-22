@@ -4,12 +4,22 @@ import pkg from './generated/prisma/index.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken'; 
 import 'dotenv/config'; 
+import nodemailer from 'nodemailer';
 
 const PrismaClient = pkg.PrismaClient ?? pkg.default?.PrismaClient;
 const prisma = new PrismaClient();
 
 const app = express();
 const port = 3000;
+
+// Configuração do transportador de e-mail
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER, 
+    pass: process.env.EMAIL_PASS 
+  }
+});
 
 app.use(express.json());
 
@@ -70,6 +80,74 @@ const authenticateToken = (req, res, next) => {
         next();
     });
 };
+
+// 1. Rota para solicitar a recuperação
+app.post('/forgot-password', async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const user = await prisma.user.findUnique({ where: { email } });
+
+    if (!user) {
+      return res.status(404).json({ error: 'Usuário não encontrado.' });
+    }
+
+    // Gerar um código de 6 dígitos (simples e funcional para mobile)
+    const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+    
+    // Salvar o código e a expiração no banco (expira em 1 hora)
+    await prisma.user.update({
+      where: { email },
+      data: {
+        resetToken: resetCode,
+        resetTokenExpires: new Date(Date.now() + 3600000)
+      }
+    });
+
+    // Enviar o e-mail
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: 'Recuperação de Senha - AgroStock',
+      text: `Seu código de recuperação é: ${resetCode}. Ele expira em 1 hora.`
+    };
+
+    await transporter.sendMail(mailOptions);
+    res.json({ message: 'E-mail de recuperação enviado!' });
+
+  } catch (error) {
+    console.error("ERRO DO NODEMAILER:", error); // <--- ADICIONE ESTA LINHA AQUI
+    res.status(500).json({ error: 'Erro ao processar solicitação.' });
+  }
+});
+
+// 2. Rota para definir a nova senha
+app.post('/reset-password', async (req, res) => {
+  const { email, code, newPassword } = req.body;
+
+  try {
+    const user = await prisma.user.findUnique({ where: { email } });
+
+    if (!user || user.resetToken !== code || user.resetTokenExpires < new Date()) {
+      return res.status(400).json({ error: 'Código inválido ou expirado.' });
+    }
+
+    // Atualiza a senha e limpa o token
+    await prisma.user.update({
+      where: { email },
+      data: {
+        senha: newPassword, // Note que se você usar hash, deve hashear aqui
+        resetToken: null,
+        resetTokenExpires: null
+      }
+    });
+
+    res.json({ message: 'Senha alterada com sucesso!' });
+
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao redefinir senha.' });
+  }
+});
 
 const isAdmin = (req, res, next) => {
     if (req.user && req.user.role === 'ADMIN') next();
