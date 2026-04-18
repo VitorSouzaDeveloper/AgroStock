@@ -1,0 +1,22 @@
+.dashboard-layout {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+}
+
+.dashboard-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+@media (max-width: 768px) {
+    .dashboard-layout {
+        flex-direction: column-reverse; 
+    }
+    .dashboard-content {
+        padding: 10px; 
+        padding-bottom: 80px; 
+    }
+}

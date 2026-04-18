@@ -2,17 +2,25 @@ import { useContext, useEffect, useState } from 'react';
 import { AuthContext } from '../../contexts/AuthContext';
 import api from '../../services/api';
 import {
-    PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer,
-    BarChart, Bar, XAxis, YAxis, CartesianGrid 
+    PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+
+// IMPORTS DO CAPACITOR (Para exportação nativa no APK)
+import { Capacitor } from '@capacitor/core';
+import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
+import { Share } from '@capacitor/share';
+
 import './ReportsPage.style.css';
 
 function ReportsPage() {
     const { user } = useContext(AuthContext);
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
+    
+    // ESTADO DAS COTAÇÕES RESTAURADO
+    const [cotacoes, setCotacoes] = useState({ dolar: 0, euro: 0 });
 
     const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
 
@@ -20,8 +28,19 @@ function ReportsPage() {
         async function fetchData() {
             if (user) {
                 try {
+                    // Busca os dados do estoque no seu backend
                     const response = await api.get(`/reports/${user.id}/full-dashboard`);
                     setData(response.data);
+
+                    // BUSCA DE COTAÇÕES RESTAURADA (Usando a API AwesomeAPI como base)
+                    const cotacaoResponse = await fetch('https://economia.awesomeapi.com.br/last/USD-BRL,EUR-BRL');
+                    const cotacaoData = await cotacaoResponse.json();
+                    
+                    setCotacoes({
+                        dolar: parseFloat(cotacaoData.USDBRL.bid),
+                        euro: parseFloat(cotacaoData.EURBRL.bid)
+                    });
+
                 } catch (error) {
                     console.error("Erro ao buscar dados", error);
                 } finally {
@@ -32,26 +51,53 @@ function ReportsPage() {
         fetchData();
     }, [user]);
 
-    function exportToCSV() {
+    async function exportToCSV() {
         if (!data?.products) return;
+        
         const headers = ["Nome", "Categoria", "Qtd", "Valor Unit (R$)", "Valor Total (R$)"];
         const rows = data.products.map(p => [
             p.name, p.category, p.quantity, p.price.toFixed(2), p.totalValue.toFixed(2)
         ]);
-        let csvContent = "data:text/csv;charset=utf-8," + headers.join(",") + "\n" + rows.map(e => e.join(",")).join("\n");
-        const encodedUri = encodeURI(csvContent);
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", "relatorio_estoque.csv");
-        document.body.appendChild(link);
-        link.click();
+        
+        const csvContentStr = headers.join(",") + "\n" + rows.map(e => e.join(",")).join("\n");
+
+        if (Capacitor.isNativePlatform()) {
+            try {
+                const fileName = `relatorio_estoque_${Date.now()}.csv`;
+                const result = await Filesystem.writeFile({
+                    path: fileName,
+                    data: csvContentStr,
+                    directory: Directory.Documents,
+                    encoding: Encoding.UTF8
+                });
+                await Share.share({
+                    title: 'Relatório de Estoque (CSV)',
+                    text: 'Aqui está o relatório do seu estoque.',
+                    url: result.uri,
+                    dialogTitle: 'Exportar Relatório'
+                });
+            } catch (error) {
+                alert("Erro ao salvar CSV no telemóvel: " + error.message);
+            }
+        } else {
+            let csvContent = "data:text/csv;charset=utf-8," + csvContentStr;
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "relatorio_estoque.csv");
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        }
     }
 
-    function exportToPDF() {
+    async function exportToPDF() {
         if (!data?.products) return;
+        
         const doc = new jsPDF();
         doc.text("Relatório de Estoque - AgroStock", 14, 10);
         doc.text(`Gerado em: ${new Date().toLocaleDateString()}`, 14, 18);
+        
         const tableColumn = ["Produto", "Categoria", "Qtd", "V. Unit", "V. Total"];
         const tableRows = [];
         data.products.forEach(product => {
@@ -63,10 +109,33 @@ function ReportsPage() {
                 `R$ ${product.totalValue.toFixed(2)}`
             ]);
         });
+        
         autoTable(doc, { head: [tableColumn], body: tableRows, startY: 25 });
         const finalY = (doc.lastAutoTable?.finalY || 25) + 10;
         doc.text(`Valor Total em Estoque: R$ ${data.kpis.totalValue.toFixed(2)}`, 14, finalY);
-        doc.save("relatorio_estoque.pdf");
+
+        if (Capacitor.isNativePlatform()) {
+            try {
+                const pdfBase64 = doc.output('datauristring').split(',')[1];
+                const fileName = `relatorio_estoque_${Date.now()}.pdf`;
+
+                const result = await Filesystem.writeFile({
+                    path: fileName,
+                    data: pdfBase64,
+                    directory: Directory.Documents
+                });
+
+                await Share.share({
+                    title: 'Relatório de Estoque (PDF)',
+                    url: result.uri,
+                    dialogTitle: 'Exportar PDF'
+                });
+            } catch (error) {
+                alert("Erro ao salvar PDF no telemóvel: " + error.message);
+            }
+        } else {
+            doc.save("relatorio_estoque.pdf");
+        }
     }
 
     const CustomTooltip = ({ active, payload }) => {
@@ -98,19 +167,26 @@ function ReportsPage() {
                 </div>
             </header>
 
-        
             <div className="kpi-grid">
                 <div className="kpi-card">
                     <h3>Valor Total em Estoque</h3>
                     <p className="kpi-value money">R$ {data?.kpis?.totalValue.toFixed(2)}</p>
                 </div>
+                
+                {/* CARD DE COTAÇÕES RESTAURADO */}
+                <div className="kpi-card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                    <h3 style={{ marginBottom: '8px' }}>Cotação Atual</h3>
+                    <p style={{ fontSize: '1.1rem', margin: '2px 0', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+                        US$ 1 = R$ {cotacoes.dolar.toFixed(2)}
+                    </p>
+                    <p style={{ fontSize: '1.1rem', margin: '2px 0', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+                        € 1 = R$ {cotacoes.euro.toFixed(2)}
+                    </p>
+                </div>
+
                 <div className="kpi-card">
                     <h3>Total de Itens</h3>
                     <p className="kpi-value">{data?.kpis?.totalItems}</p>
-                </div>
-                <div className="kpi-card">
-                    <h3>Produtos Diferentes</h3>
-                    <p className="kpi-value">{data?.kpis?.productsCount}</p>
                 </div>
                 <div className="kpi-card warning">
                     <h3>Estoque Baixo</h3>

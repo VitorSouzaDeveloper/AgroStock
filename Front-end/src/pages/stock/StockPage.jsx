@@ -5,12 +5,22 @@ import { PRODUCT_CATEGORIES } from '../../constants/categories';
 import api from '../../services/api';
 import Modal from '../../components/Modal';
 import './StockPage.style.css';
+import { CapacitorBarcodeScanner } from '@capacitor/barcode-scanner';
 
 function StockPage() {
     const { user, logout } = useContext(AuthContext);
     const navigate = useNavigate();
     const [products, setProducts] = useState([]);
     const [categoryFilter, setCategoryFilter] = useState('Todos');
+    
+    // Novo estado para a pesquisa
+    const [searchTerm, setSearchTerm] = useState('');
+    
+    // NOVO: Estado para controlar a abertura dos filtros no mobile
+    const [isFiltersOpen, setIsFiltersOpen] = useState(false);
+
+    // NOVO: Estado para verificar se é um dispositivo móvel
+    const [isMobile, setIsMobile] = useState(false);
 
     // Estados dos modais e edição
     const [isMovementModalOpen, setIsMovementModalOpen] = useState(false);
@@ -36,19 +46,56 @@ function StockPage() {
     const batchRef = useRef();
     const expiryRef = useRef();
     const descriptionRef = useRef();
+    const barcodeRef = useRef();
 
     // Novos Estados
     const [locations, setLocations] = useState([]);
     const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
-    const [useAltUnit, setUseAltUnit] = useState(false); // Toggle para conversão
+    const [useAltUnit, setUseAltUnit] = useState(false); 
 
     // Novas Refs
-    const newLocationNameRef = useRef(); // Para criar local
-    const movementLocationRef = useRef(); // Para selecionar local na movimentação
-    const newProductAltUnitRef = useRef(); // "Saco"
-    const newProductAltFactorRef = useRef(); // "60"
+    const newLocationNameRef = useRef(); 
+    const movementLocationRef = useRef(); 
+    const newProductAltUnitRef = useRef(); 
+    const newProductAltFactorRef = useRef(); 
 
-    // --- LÓGICA DE DADOS ---
+    // NOVO: Verifica se o dispositivo é móvel ao carregar a página
+    useEffect(() => {
+        const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+        // Verifica se é Android, iOS ou Windows Phone
+        if (/android|iphone|ipad|ipod|windows phone/i.test(userAgent.toLowerCase())) {
+            setIsMobile(true);
+        }
+    }, []);
+
+    async function scanBarcodeForRegistration() {
+        try {
+            const result = await CapacitorBarcodeScanner.scanBarcode({ hint: 'ALL' });
+            if (result.ScanResult && barcodeRef.current) {
+                // Preenche o input do modal com o código lido!
+                barcodeRef.current.value = result.ScanResult;
+            }
+        } catch (error) {
+            console.error("Erro no scanner:", error);
+        }
+    }
+    
+    async function startScan() {
+        try {
+            // O plugin oficial abre a sua própria janela de câmara automaticamente
+            const result = await CapacitorBarcodeScanner.scanBarcode({
+                hint: 'ALL' // Permite ler tanto QR Codes como Códigos de Barras normais
+            });
+            
+            // Se o utilizador leu um código com sucesso
+            if (result.ScanResult) {
+                setSearchTerm(result.ScanResult);
+            }
+        } catch (error) {
+            console.error("Erro no scanner:", error);
+            alert("Erro ao ler o código. Tente novamente.");
+        }
+    }
 
     async function fetchLocations() {
         if (user) {
@@ -56,7 +103,6 @@ function StockPage() {
             setLocations(res.data);
         }
     }
-    // Chame fetchLocations() dentro do useEffect que carrega os produtos
 
     async function handleAddLocation(e) {
         e.preventDefault();
@@ -65,6 +111,7 @@ function StockPage() {
         setIsLocationModalOpen(false);
         fetchLocations();
     }
+    
     async function fetchProducts() {
         if (user) {
             try {
@@ -79,9 +126,22 @@ function StockPage() {
     useEffect(() => { fetchProducts(); }, [user]);
 
     const filteredProducts = useMemo(() => {
-        if (categoryFilter === 'Todos') return products;
-        return products.filter(p => p.category === categoryFilter);
-    }, [products, categoryFilter]);
+        let filtered = products;
+        
+        if (categoryFilter !== 'Todos') {
+            filtered = filtered.filter(p => p.category === categoryFilter);
+        }
+        
+        if (searchTerm) {
+            const term = searchTerm.toLowerCase();
+            filtered = filtered.filter(p => 
+                p.name.toLowerCase().includes(term) || 
+                (p.barcode && p.barcode.includes(term))
+            );
+        }
+        
+        return filtered;
+    }, [products, categoryFilter, searchTerm]);
 
     function handleLogout() { logout(); navigate('/'); }
 
@@ -92,7 +152,6 @@ function StockPage() {
         setSelectedProduct(null);
         setIsProductModalOpen(true);
 
-        // Limpa os campos
         setTimeout(() => {
             if (nameRef.current) {
                 nameRef.current.value = "";
@@ -104,6 +163,7 @@ function StockPage() {
                 batchRef.current.value = "";
                 expiryRef.current.value = "";
                 descriptionRef.current.value = "";
+                if (barcodeRef.current) barcodeRef.current.value = "";
             }
         }, 0);
     }
@@ -113,7 +173,6 @@ function StockPage() {
         setSelectedProduct(product);
         setIsProductModalOpen(true);
 
-        // Preenche os campos com dados existentes
         setTimeout(() => {
             if (nameRef.current) {
                 nameRef.current.value = product.name;
@@ -123,9 +182,9 @@ function StockPage() {
                 priceRef.current.value = product.price;
                 minStockRef.current.value = product.minStock || "";
                 batchRef.current.value = product.batch || "";
-                // Formata data para input type="date" (YYYY-MM-DD)
                 expiryRef.current.value = product.expiryDate ? product.expiryDate.split('T')[0] : "";
                 descriptionRef.current.value = product.description || "";
+                if (barcodeRef.current) barcodeRef.current.value = product.barcode || "";
             }
         }, 0);
     }
@@ -170,6 +229,7 @@ function StockPage() {
             batch: batchRef.current.value,
             expiryDate: expiryRef.current.value,
             description: descriptionRef.current.value,
+            barcode: barcodeRef.current.value,
             ownerId: user.id
         };
 
@@ -234,7 +294,42 @@ function StockPage() {
                     </button>
                 </div>
 
-                <div className="filter-container">
+                {/* 3. A Barra de Pesquisa */}
+                <div className="search-container">
+                    <svg className="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                    <input
+                        type="text"
+                        placeholder="Pesquisar pelo nome ou código de barras..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="search-input"
+                    />
+                    {/* ATUALIZADO: Renderização condicional para o scanner na pesquisa */}
+                    {isMobile && (
+                        <button onClick={startScan} style={{ background: 'none', border: 'none', color: '#48BB78', cursor: 'pointer', padding: '5px' }}>
+                            <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M3 8V6a2 2 0 012-2h3m10 0h3a2 2 0 012 2v2M3 16v2a2 2 0 002 2h3m10 0h3a2 2 0 002-2v-2M8 12h8"></path>
+                            </svg>
+                        </button>
+                    )}
+                </div>
+
+                {/* NOVO: Botão de alternar filtros exclusivo para mobile */}
+                <button 
+                    className="mobile-filter-toggle" 
+                    onClick={() => setIsFiltersOpen(!isFiltersOpen)}
+                >
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+                    </svg>
+                    {isFiltersOpen ? "Esconder Filtros" : "Filtrar Produtos"}
+                    {categoryFilter !== 'Todos' && <span className="filter-badge">1</span>}
+                </button>
+
+                {/* ATUALIZADO: A div de filtros agora reage ao estado isFiltersOpen no mobile */}
+                <div className={`filter-container ${isFiltersOpen ? 'open' : ''}`}>
                     <button className={`filter-button ${categoryFilter === 'Todos' ? 'active' : ''}`} onClick={() => setCategoryFilter('Todos')}>Todos</button>
                     {PRODUCT_CATEGORIES.map(cat => (
                         <button key={cat} className={`filter-button ${categoryFilter === cat ? 'active' : ''}`} onClick={() => setCategoryFilter(cat)}>{cat}</button>
@@ -245,7 +340,6 @@ function StockPage() {
                     {filteredProducts.length > 0 ? filteredProducts.map(product => (
                         <div key={product.id} className="product-item">
 
-                            {/* Container de Ícones (Topo Direito) */}
                             <div className="card-icons" style={{ position: 'absolute', top: '10px', right: '10px', display: 'flex', gap: '5px', zIndex: 2 }}>
                                 <button className="icon-btn info" onClick={() => openEditModal(product)} title="Ver detalhes e Editar" style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '6px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3182ce' }}>
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} style={{ width: '18px', height: '18px' }}>
@@ -271,14 +365,12 @@ function StockPage() {
                                 <p><strong>Categoria:</strong> {product.category}</p>
                                 <p><strong>Valor:</strong> R$ {Number(product.price).toFixed(2)}</p>
 
-                                {/* --- NOVA LINHA DE LOTE E VALIDADE --- */}
                                 <p style={{ marginTop: '8px', borderTop: '1px solid #4A5568', paddingTop: '8px' }}>
                                     <strong>Lote:</strong> {product.batch || '-'} <br />
                                     <strong>Validade:</strong> {product.expiryDate ? new Date(product.expiryDate).toLocaleDateString('pt-BR') : '-'}
                                 </p>
                             </div>
 
-                            {/* Lógica de Validade e Alertas */}
                             {(() => {
                                 const alertStyle = { fontWeight: 'bold', marginTop: '10px', paddingRight: '30px', fontSize: '13px' };
 
@@ -294,16 +386,16 @@ function StockPage() {
                                 if (diffDays < 0) return <p style={{ ...alertStyle, color: '#e53e3e' }}>☠️ VENCIDO!</p>;
                                 if (diffDays <= 30) return <p style={{ ...alertStyle, color: '#dd6b20' }}>⚠️ VENCE EM {diffDays} DIAS</p>;
 
-                                return null; // Se estiver tudo ok, não mostra nada (pois a data já está na lista)
+                                return null;
                             })()}
 
                             <div className="product-actions">
                                 <button className="edit-button" onClick={() => openMovementModal(product, 'ENTRADA')}>Adicionar</button>
-                                <button className="subtract-button" onClick={() => openMovementModal(product, 'SAIDA')}>Baixar</button>
+                                <button className="subtract-button" onClick={() => openMovementModal(product, 'SAIDA')}>Retirar</button>
                                 <button className="history-button" onClick={() => openHistoryModal(product)}>Histórico</button>
                             </div>
                         </div>
-                    )) : <p>Nenhum produto encontrado.</p>}
+                    )) : <p>Nenhum produto encontrado com estes filtros.</p>}
                 </div>
             </main>
 
@@ -353,13 +445,32 @@ function StockPage() {
                             <input type="text" ref={batchRef} placeholder="Ex: A-25" />
                         </div>
                     </div>
-                    <div className="form-group">
-                        <label>Validade</label>
-                        <input type="date" ref={expiryRef} />
+                    <div className="form-row">
+                        <div className="form-group">
+                            <label>Código de Barras (EAN/QR)</label>
+                            <div style={{ display: 'flex', gap: '10px' }}>
+                                <input type="text" ref={barcodeRef} placeholder="Digite ou escaneie..." style={{ flex: 1 }} />
+                                {isMobile && (
+                                    <button 
+                                        type="button" 
+                                        onClick={scanBarcodeForRegistration}
+                                        style={{ backgroundColor: '#48BB78', color: 'white', border: 'none', borderRadius: '8px', padding: '0 12px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                                    >
+                                        <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M3 8V6a2 2 0 012-2h3m10 0h3a2 2 0 012 2v2M3 16v2a2 2 0 002 2h3m10 0h3a2 2 0 002-2v-2M8 12h8"></path>
+                                        </svg>
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                        <div className="form-group" style={{ maxWidth: '160px' }}>
+                            <label>Validade</label>
+                            <input type="date" ref={expiryRef} />
+                        </div>
                     </div>
                     <div className="form-group">
                         <label>Descrição</label>
-                        <textarea ref={descriptionRef} rows="3" placeholder="Detalhes opcionais..."></textarea>
+                        <textarea ref={descriptionRef} rows="2" placeholder="Detalhes opcionais..."></textarea>
                     </div>
                     <div className="modal-actions">
                         <button type="button" onClick={closeModals} className="cancel-button">Cancelar</button>

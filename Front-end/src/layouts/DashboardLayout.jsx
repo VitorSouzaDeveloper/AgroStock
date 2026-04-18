@@ -1,24 +1,12 @@
 import { Outlet } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
-
-const layoutStyle = {
-    display: 'flex',
-    height: '100vh',
-    width: '100vw',
-};
-
-const contentStyle = {
-    flex: 1,
-    overflowY: 'auto', // Permite scroll no conteúdo se for grande
-    padding: '20px',
-};
+import './DashboardLayout.css'; 
 
 function DashboardLayout() {
     return (
-        <div style={layoutStyle}>
+        <div className="dashboard-layout">
             <Sidebar />
-            <main style={contentStyle}>
-                {/* O Outlet renderiza o componente da rota filha (Estoque, Relatórios, etc.) */}
+            <main className="dashboard-content">
                 <Outlet />
             </main>
         </div>

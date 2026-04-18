@@ -1,38 +1,46 @@
 import { createContext, useState, useEffect } from 'react';
+import api from '../services/api';
 
 export const AuthContext = createContext({});
 
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
 
-    // Efeito para carregar dados do usuário do localStorage ao iniciar
     useEffect(() => {
         const storedUser = localStorage.getItem('agrostock_user');
         const token = localStorage.getItem('agrostock_token');
         
-        // Só considera o usuário logado se houver um token
         if (storedUser && token) {
             setUser(JSON.parse(storedUser));
+            api.defaults.headers.Authorization = `Bearer ${token}`;
         }
+        
+        setLoading(false); 
     }, []);
 
-    // Função de Login: Salva usuário e token
-    function login(loginData) { // loginData agora é { user, token }
+    // Função de Login simplificada: apenas guarda os dados que a página de Login enviou
+    function login(loginData) { 
         setUser(loginData.user);
+        
+        // Injeta a chave na API
+        api.defaults.headers.Authorization = `Bearer ${loginData.token}`;
+        
+        // Guarda no armazenamento local
         localStorage.setItem('agrostock_user', JSON.stringify(loginData.user));
         localStorage.setItem('agrostock_token', loginData.token);
     }
 
-    // Função de Logout: Limpa usuário e token
     function logout() {
         setUser(null);
         localStorage.removeItem('agrostock_user');
         localStorage.removeItem('agrostock_token');
+        api.defaults.headers.Authorization = undefined;
     }
 
     return (
-        <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, logout }}>
-            {children}
+        <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, logout, loading }}>
+            {!loading && children}
         </AuthContext.Provider>
     );
 }

@@ -5,7 +5,7 @@ import { AuthContext } from './contexts/AuthContext';
 // Importando os Layouts e Páginas
 import DashboardLayout from './layouts/DashboardLayout';
 import Login from './pages/login';
-import Home from './pages/home';
+import Signup from './pages/signup';
 import StockPage from './pages/stock/StockPage';
 import ReportsPage from './pages/reports/ReportsPage';
 import AdminPage from './pages/admin/AdminPage';
@@ -32,7 +32,7 @@ function AppRoutes() {
             <Routes>
                 {/* --- Rotas Públicas --- */}
                 <Route path="/" element={<Login />} />
-                <Route path="/signup" element={<Home />} />
+                <Route path="/signup" element={<Signup />} />
 
                 {/* --- Rotas da Dashboard (para usuários logados) --- */}
                 <Route

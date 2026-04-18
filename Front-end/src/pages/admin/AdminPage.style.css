@@ -1,19 +1,64 @@
 .admin-container {
     color: var(--text-primary);
+    padding-bottom: 20px;
 }
-.admin-container h1 {
+
+.admin-header {
+    margin-bottom: 20px;
+}
+
+.admin-header h1 {
     color: var(--primary-green);
     margin-bottom: 5px;
 }
-.admin-container p {
-    margin-bottom: 30px;
+
+.admin-header p {
     color: var(--text-secondary);
+    margin: 0;
+}
+
+.search-container {
+    display: flex;
+    align-items: center;
+    background-color: var(--background-dark);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0 15px;
+    margin-bottom: 20px;
+    height: 45px;
+    width: 100%;
+    max-width: 400px;
+    transition: border-color 0.2s;
+}
+
+.search-container:focus-within {
+    border-color: var(--primary-green);
+    box-shadow: 0 0 0 1px var(--primary-green);
+}
+
+.search-icon {
+    width: 20px;
+    height: 20px;
+    color: var(--text-secondary);
+    margin-right: 10px;
+}
+
+.search-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-size: 15px;
+    outline: none;
+    height: 100%;
 }
 
 .users-table {
     width: 100%;
     border-collapse: collapse;
     background-color: var(--background-light);
+    border-radius: 8px;
+    overflow: hidden; 
 }
 
 .users-table th, .users-table td {
@@ -26,6 +71,7 @@
     font-size: 14px;
     text-transform: uppercase;
     color: var(--text-secondary);
+    background-color: rgba(0,0,0,0.1); 
 }
 
 .users-table tbody tr:hover {
@@ -39,13 +85,48 @@
     padding: 8px 12px;
     border-radius: 5px;
     cursor: pointer;
+    font-weight: bold;
 }
+
 .promote-btn {
-    background-color: #3182ce; /* Azul */
+    background-color: #3182ce;
     color: white;
     border: none;
     padding: 8px 12px;
     border-radius: 5px;
     cursor: pointer;
     margin-right: 10px;
+    font-weight: bold;
+}
+
+.promote-btn:hover { background-color: #2b6cb0; }
+.delete-btn:hover { background-color: #c53030; }
+
+
+@media (max-width: 768px) {
+    .search-container {
+        max-width: 100%; 
+        height: 55px; 
+    }
+
+    main {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 10px;
+    }
+
+    .users-table {
+        min-width: 600px; 
+    }
+
+    .users-table th, 
+    .users-table td {
+        padding: 12px 10px;
+        font-size: 13px;
+    }
+
+    .delete-btn, .promote-btn {
+        padding: 14px 18px;
+        margin-bottom: 5px;
+    }
 }

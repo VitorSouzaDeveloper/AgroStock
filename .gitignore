@@ -1,8 +1,39 @@
-
-*.log
-.DS_Store
+# Dependências e builds — nunca commitar
 node_modules/
+dist/
+dist-ssr/
+.cache/
+build/
+
+# Variáveis de ambiente — contêm segredos
 .env
 .env.*
-dist/
-.cache/
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+
+# Editores
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Capacitor / Android build
+Front-end/android/.gradle/
+Front-end/android/app/build/
+Front-end/android/local.properties
+
+# Prisma generated
+backend/generated/

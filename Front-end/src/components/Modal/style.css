@@ -7,8 +7,11 @@
     background-color: rgba(0, 0, 0, 0.7);
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;      /* alinha no topo para o modal crescer para baixo */
+    overflow-y: auto;             /* o OVERLAY faz o scroll no desktop */
+    padding: 40px 20px;           /* espaço ao redor do modal */
     z-index: 1000;
+    box-sizing: border-box;
 }
 
 .modal-content {
@@ -18,6 +21,7 @@
     width: 100%;
     max-width: 500px;
     border: 1px solid var(--border-color);
+    flex-shrink: 0;
 }
 
 .modal-header {
@@ -46,7 +50,7 @@
     display: flex;
     flex-direction: column;
     gap: 5px;
-    margin-bottom: 15px;
+    margin-bottom: 5px;
 }
 
 .modal-body .form-group label {
@@ -63,4 +67,48 @@
     background-color: var(--background-dark);
     color: var(--text-primary);
     outline: none;
+}
+
+@media (min-width: 769px) {
+    .modal-content {
+        padding: 20px 25px;
+    }
+
+    .modal-header {
+        padding-bottom: 10px;
+        margin-bottom: 12px;
+    }
+
+    .modal-header h2 {
+        font-size: 18px;
+    }
+}
+
+@media (max-width: 768px) {
+    .modal-overlay {
+        align-items: center;
+        padding: 15px;
+        overflow-y: hidden;        /* no mobile o overlay NÃO faz scroll */
+    }
+
+    .modal-content {
+        width: 95%;
+        padding: 20px 15px;
+        max-height: 85vh;          /* altura máxima no mobile */
+        display: flex;
+        flex-direction: column;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .modal-body {
+        overflow-y: auto;          /* scroll dentro do modal só no mobile */
+        flex: 1;
+        padding-right: 4px;
+    }
+
+    .modal-content h2 {
+        font-size: 20px;
+        margin-bottom: 15px;
+    }
 }

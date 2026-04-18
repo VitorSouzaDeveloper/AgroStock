@@ -6,10 +6,10 @@ import './AdminPage.style.css';
 function AdminPage() {
     const { user } = useContext(AuthContext);
     const [users, setUsers] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
 
     async function fetchUsers() {
         try {
-            // Não é mais necessário enviar o header 'x-user-id'
             const response = await api.get('/admin/users');
             setUsers(response.data);
         } catch (error) {
@@ -25,7 +25,6 @@ function AdminPage() {
     async function handleDeleteUser(userId) {
         if (window.confirm("Tem certeza que deseja deletar este usuário? A ação é irreversível.")) {
             try {
-                // Não é mais necessário enviar o header 'x-user-id'
                 await api.delete(`/admin/users/${userId}`);
                 alert('Usuário deletado com sucesso.');
                 fetchUsers();
@@ -41,7 +40,6 @@ function AdminPage() {
 
         if (window.confirm(`Tem certeza que deseja ${action} ${targetUser.name}?`)) {
             try {
-                 // Não é mais necessário enviar o header 'x-user-id'
                 await api.put(`/admin/users/${targetUser.id}/role`, 
                     { role: newRole }
                 );
@@ -53,42 +51,75 @@ function AdminPage() {
         }
     }
 
+    const filteredUsers = users.filter(u =>
+        u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        u.email.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
     return (
         <div className="admin-container">
-            <h1>Painel de Administração</h1>
-            <p>Gerenciamento de usuários do sistema.</p>
+            <div className="admin-header">
+                <div>
+                    <h1>Painel de Administração</h1>
+                    <p>Gerenciamento de usuários do sistema.</p>
+                </div>
+            </div>
 
-            <table className="users-table">
-                <thead>
-                    <tr>
-                        <th>Nome</th>
-                        <th>Email</th>
-                        <th>Função (Role)</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {users.map(u => (
-                        <tr key={u.id}>
-                            <td>{u.name}</td>
-                            <td>{u.email}</td>
-                            <td>{u.role}</td>
-                            <td>
-                                {user.id !== u.id && (
-                                    <>
-                                        <button onClick={() => handleToggleAdmin(u)} className="promote-btn">
-                                            {u.role === 'ADMIN' ? 'Rebaixar' : 'Promover a Admin'}
-                                        </button>
-                                        <button onClick={() => handleDeleteUser(u.id)} className="delete-btn">
-                                            Deletar
-                                        </button>
-                                    </>
-                                )}
-                            </td>
+            <div className="search-container">
+                <svg className="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+                <input
+                    type="text"
+                    placeholder="Pesquisar utilizador por nome ou e-mail..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="search-input"
+                />
+            </div>
+
+            <main>
+                <table className="users-table">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Email</th>
+                            <th>Função (Role)</th>
+                            <th>Ações</th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+
+                        {filteredUsers.map(u => (
+                            <tr key={u.id}>
+                                <td>{u.name}</td>
+                                <td>{u.email}</td>
+                                <td>{u.role}</td>
+                                <td>
+                                    {user.id !== u.id && (
+                                        <>
+                                            <button onClick={() => handleToggleAdmin(u)} className="promote-btn">
+                                                {u.role === 'ADMIN' ? 'Rebaixar' : 'Promover a Admin'}
+                                            </button>
+                                            <button onClick={() => handleDeleteUser(u.id)} className="delete-btn">
+                                                Deletar
+                                            </button>
+                                        </>
+                                    )}
+                                </td>
+                            </tr>
+                        ))}
+                        {}
+                        {filteredUsers.length === 0 && (
+                            <tr>
+                                <td colSpan="4" style={{ textAlign: 'center', padding: '20px', color: 'var(--text-secondary)' }}>
+                                    Nenhum utilizador encontrado com "{searchTerm}".
+                                </td>
+                            </tr>
+                        )}
+                    </tbody>
+                </table>
+            </main>
         </div>
     );
 }

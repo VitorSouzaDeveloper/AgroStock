@@ -51,7 +51,6 @@ main h2 {
     font-size: 20px;
 }
 
-
 .stock-header {
     display: flex;
     justify-content: space-between;
@@ -107,13 +106,13 @@ main h2 {
 
 .stock-list {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 15px;
 }
 
 .product-item {
     background-color: var(--background-light);
-    padding: 15px;
+    padding: 12px;
     border-radius: 8px;
     border: 1px solid var(--border-color);
     position: relative;
@@ -284,11 +283,21 @@ main h2 {
 .cancel-button {
     background-color: #a0aec0;
     color: #1A202C;
+    width: 100%;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    width: 100%;
+    padding: 5px;
 }
 
 .save-button {
     background-color: var(--primary-green);
     color: white;
+    width: 100%;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    width: 100%;
+    padding: 5px;
 }
 
 .history-list {
@@ -349,4 +358,159 @@ main h2 {
     color: #a0aec0;
     margin-top: 4px;
     text-align: right;
+}
+
+.hidden-during-scan {
+    display: none !important;
+}
+
+/* --- ESTILOS DO BOTÃO DE FILTRO (MOBILE) --- */
+.mobile-filter-toggle {
+    display: none; /* Escondido por padrão na Web */
+    width: 100%;
+    background-color: var(--background-light);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 14px;
+    cursor: pointer;
+    margin-bottom: 15px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background-color 0.2s;
+}
+
+.mobile-filter-toggle:active {
+    background-color: var(--background-dark);
+}
+
+.filter-badge {
+    background-color: var(--primary-green);
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    margin-left: 5px;
+}
+
+/* --- COMPRESSÃO DO FORMULÁRIO SOMENTE NA WEB --- */
+@media (min-width: 769px) {
+    .form-group {
+        margin-bottom: 7px;
+    }
+
+    .form-row {
+        margin-bottom: 7px;
+    }
+
+    .form-group label {
+        font-size: 12px;
+    }
+
+    .form-group input,
+    .form-group select {
+        height: 34px;
+        padding: 0 8px;
+        font-size: 13px;
+    }
+
+    .form-group textarea {
+        min-height: 48px;
+        font-size: 13px;
+    }
+
+    .modal-actions {
+        margin-top: 10px;
+        padding-top: 10px;
+    }
+
+    .modal-actions button {
+        height: 36px;
+        font-size: 13px;
+    }
+}
+
+/* --- REGRAS PARA O TELEMÓVEL --- */
+@media (max-width: 768px) {
+    header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .stock-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 15px;
+    }
+
+    .stock-list {
+        grid-template-columns: 1fr;
+    }
+
+    .add-new-product-button {
+        width: 100%;
+    }
+
+    .form-row {
+        flex-direction: column;
+        gap: 0; 
+    }
+
+    .modal-actions {
+        flex-direction: column-reverse; 
+        gap: 12px;
+        margin-top: 20px;
+    }
+
+    .modal-actions button {
+        width: 100%;
+        height: 55px; 
+        font-size: 16px; 
+        border-radius: 8px; 
+    }
+    
+    .history-list {
+        max-height: 200px;
+    }
+
+    /* Regras do Filtro no Mobile */
+    .mobile-filter-toggle {
+        display: flex; 
+    }
+
+    .filter-container {
+        display: none; 
+        background-color: var(--background-light);
+        padding: 15px;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        margin-bottom: 20px;
+    }
+
+    .filter-container.open {
+        display: flex;
+        flex-direction: column; 
+        gap: 8px;
+        animation: slideDown 0.3s ease-out forwards;
+    }
+
+    .filter-container.open .filter-button {
+        width: 100%;
+        text-align: left;
+        padding: 10px 15px;
+        border-radius: 6px;
+    }
+
+    @keyframes slideDown {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
 }
